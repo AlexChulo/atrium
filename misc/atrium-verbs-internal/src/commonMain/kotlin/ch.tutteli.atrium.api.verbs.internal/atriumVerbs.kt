@@ -1,5 +1,6 @@
 package ch.tutteli.atrium.api.verbs.internal
 
+import ch.tutteli.atrium.api.verbs.internal.factory.InternalExpectationVerbs
 import ch.tutteli.atrium.core.ExperimentalNewExpectTypes
 import ch.tutteli.atrium.creating.*
 import ch.tutteli.atrium.logic._logic
@@ -12,6 +13,10 @@ import ch.tutteli.atrium.reporting.Text
 import ch.tutteli.atrium.reporting.erroradjusters.MultiAtriumErrorAdjuster
 import ch.tutteli.atrium.reporting.erroradjusters.RemoveAtriumFromAtriumError
 import ch.tutteli.atrium.reporting.erroradjusters.RemoveRunnerFromAtriumError
+import ch.tutteli.atrium.testfactories.TestFactoryBuilder
+import ch.tutteli.atrium.testfactories.testFactoryTemplate
+
+import ch.tutteli.atrium.api.verbs.internal.expect as atriumVerb
 
 @OptIn(ExperimentalNewExpectTypes::class, ExperimentalComponentFactoryContainer::class)
 fun <T> expect(subject: T): RootExpect<T> =
@@ -29,7 +34,7 @@ fun <T> expect(subject: T): RootExpect<T> =
         .build()
 
 fun <T> expect(subject: T, assertionCreator: Expect<T>.() -> Unit): Expect<T> =
-    expect(subject)._logic.appendAsGroup(assertionCreator)
+    atriumVerb(subject)._logic.appendAsGroup(assertionCreator)
 
 
 @OptIn(ExperimentalNewExpectTypes::class)
@@ -62,3 +67,9 @@ expect class RemoveAtriumButNotAtriumSpecsFromAtriumErrorImpl() : RemoveAtriumFr
     override fun adjust(throwable: Throwable)
     override fun adjustOtherThanStacks(throwable: Throwable)
 }
+
+fun testFactory(setup: TestFactoryBuilder.() -> Unit) = testFactoryTemplate(setup, InternalExpectationVerbs)
+fun testFactory(
+    setup: TestFactoryBuilder.() -> Unit,
+    vararg otherSetups: TestFactoryBuilder.() -> Unit
+) = testFactoryTemplate(setup, otherSetups, InternalExpectationVerbs)
